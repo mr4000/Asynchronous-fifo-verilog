@@ -1,205 +1,284 @@
-📘 1. Asynchronous FIFO Theory (Summary)
+# 📘 Asynchronous FIFO – Theory, Design & Verification
 
-An asynchronous FIFO transfers data between two independent, unrelated clock domains:
+This document explains the theory, architecture, and verification of an **asynchronous FIFO**, focusing on safe data transfer between **independent clock domains**.
 
-Write side: wr_clk
+---
 
-Read side: rd_clk
+# 1. Asynchronous FIFO Theory
 
-Such FIFOs must handle:
+An **asynchronous FIFO** transfers data between two unrelated clocks:
 
-metastability
+- **Write clock:** `wr_clk`
+- **Read clock:** `rd_clk`
 
-pointer corruption
+It must safely manage:
 
-safe multi-bit synchronization
+- Metastability
+- Pointer corruption
+- Safe multi-bit synchronization
+- Reliable FULL/EMPTY detection
+- Overflow/Underflow protection
 
-correct FULL/EMPTY detection
+This design uses the **standard industry architecture**.
 
-overflow/underflow protection
+---
 
-This implementation uses a standard and proven architecture.
+## 1.1 Why Use Gray-Code Pointers?
 
-1.1 Why Use Gray Code Pointers?
+Binary counters may change multiple bits at once:
 
-Binary counters can change multiple bits at once:
+```
+0111 → 1000   // 4 bits change
+```
 
-0111 → 1000   (4 bits change)
+If sampled mid-transition, another clock domain sees **corrupted values**.
 
+### ✔ Gray code solves this
 
-If sampled mid-transition by another clock domain, this can cause incorrect FULL/EMPTY detection.
-
-✔ Gray code solves this
-
-Only one bit changes per increment
-
-Sampling mid-transition produces at most 1-bit error
-
-Ensures safe pointer synchronization
+- Only **one bit changes per count**
+- Cross-domain sampling has at most **1 bit uncertainty**
+- FULL/EMPTY logic becomes safe
 
 Example Gray sequence:
 
+```
 0110 → 0111 → 0101 → 0100 → 1100 → ...
+```
 
-1.2 Pointer Width and Structure
+---
 
-For a FIFO of depth DEPTH = 2^ASIZE:
+## 1.2 Pointer Width & Structure
 
-Pointer width: P = ASIZE + 1
+For FIFO depth:
 
-Lower ASIZE bits → memory address
+```
+DEPTH = 2^ASIZE
+```
 
-MSB → wrap detection (distinguishes FULL vs EMPTY)
+Pointer width:
 
-Each pointer exists in two forms:
+```
+P = ASIZE + 1  // extra MSB for wrap detection
+```
 
-Purpose	Format
-Incrementing & addressing	Binary
-Crossing clock domain	Gray code
-1.3 Pointer Synchronizers (CDC)
+| Purpose                     | Format |
+|-----------------------------|--------|
+| Addressing & incrementing   | Binary |
+| Crossing clock domains (CDC) | Gray   |
 
-Each Gray pointer is synchronized into the opposite domain via two flip-flops:
+Lower ASIZE bits → memory address  
+MSB → wrap detection
 
-// Read pointer into write clock domain
+---
+
+## 1.3 Pointer Synchronizers (CDC)
+
+Each pointer crosses to the opposite domain using **two flip-flops**:
+
+```verilog
+// Read pointer → write clock domain
 wrptr_s1 <= rd_gray;
 wrptr_s2 <= wrptr_s1;
 
-// Write pointer into read clock domain
+// Write pointer → read clock domain
 rwptr_s1 <= wr_gray;
 rwptr_s2 <= rwptr_s1;
+```
 
+Only the **second stage** is used (`*_s2`), removing metastability and ensuring stable pointer values.
 
-Only the second stage (*_s2) is used.
+---
 
-This removes metastability and produces stable timing.
+## 1.4 Next-Pointer Logic (STA Friendly)
 
-1.4 Next-Pointer Logic (STA-Friendly)
+```verilog
 wbin_next = wr_bin + (wr_en & ~full);
 wgnext    = bin2gray(wbin_next);
 
 rbin_next = rd_bin + (rd_en & ~empty);
 rgnext    = bin2gray(rbin_next);
+```
 
+Using *next* values ensures FULL/EMPTY flags update immediately.
 
-Using next pointer values ensures FULL/EMPTY flags update in the same cycle as the pointer increment.
+---
 
-1.5 FULL Condition (Gray Logic)
+## 1.5 FULL Condition (Gray Logic)
 
-Industry-standard FULL detection rule:
-
+```verilog
 wfull_reg <= (wgnext == {~wrptr_sync[P-1:P-2], wrptr_sync[P-3:0]});
+```
 
+### Why invert the top two bits?
 
-Why invert the top two bits?
+- When the write pointer wraps and catches the read pointer  
+- The Gray codes differ only in their MSBs  
+- This detects **true FIFO FULL**
 
-When write pointer wraps and catches the read pointer,
+This is the standard industry formula.
 
-The Gray codes only differ in the MSBs
+---
 
-This comparison correctly detects FULL without ambiguity
+## 1.6 EMPTY Condition
 
-1.6 EMPTY Condition
-
-Empty when the next read pointer equals the synchronized write pointer:
-
+```verilog
 rempty_reg <= (rgnext == rwptr_sync);
+```
 
-1.7 Memory Behavior
-Write (write-clock domain)
+When next read pointer equals synchronized write pointer → FIFO empty.
+
+---
+
+## 1.7 Memory Behavior
+
+### Write (write-clock domain)
+
+```verilog
 if (wr_en && !full)
     mem[waddr] <= wr_data;
+```
 
-Read (read-clock domain)
+### Read (read-clock domain)
+
+```verilog
 rd_data <= mem[raddr];
+```
 
+The output holds stable when empty = 1.
 
-The last read value is held stable when empty = 1.
+---
 
-1.8 Why FIFO Must Be Power-of-2 Deep
+## 1.8 Why FIFO Depth Must Be Power-of-2
 
-Gray code wraps cleanly only for 2^N sizes.
+Gray code wraps correctly only for **2ⁿ sized FIFOs**.  
+Non-power-of-2 depths violate the one-bit transition property and break CDC safety.
 
-For non-power-of-2 depths:
+---
 
-Multi-bit transitions appear
+# 2. Testbench Description
 
-Gray-code one-bit-change property breaks
+The testbench provides full verification of the FIFO design.
 
-FULL/EMPTY detection becomes unsafe
+---
 
-🧪 2. Testbench Description
+## 2.1 Reset Handling (Vivado GSR)
 
-The testbench performs a complete verification of FIFO behavior.
+Vivado introduces a **Global Set/Reset (GSR)** active for ~100 ns during post-implementation simulation.
 
-2.1 Reset Handling (includes Vivado GSR)
+Testbench waits:
 
-Vivado post-implementation simulation includes a Global Set/Reset (GSR) active for ~100 ns.
-
-The TB waits long enough before releasing reset:
-
+```
 #200;
 wr_rst_n = 1;
 rd_rst_n = 1;
+```
 
+This ensures the FIFO internal registers are not held by GSR.
 
-This ensures FIFO registers are not held in reset by GSR.
+---
 
-2.2 Clock Generation
+## 2.2 Clock Generation
 
-Two asynchronous clocks:
+- Write clock: `wr_clk = 100 MHz` (10 ns)
+- Read clock: `rd_clk ≈ 71 MHz` (14 ns)
 
-wr_clk = 100 MHz  (10 ns period)
-rd_clk ≈ 71 MHz   (14 ns period)
+These independent clocks cause *true asynchronous* operation.
 
+---
 
-This simulates true async CDC behavior.
+## 2.3 Writing Until FULL
 
-2.3 Writing Until FULL
-
-The testbench writes incrementing values until the FIFO asserts FULL:
-
+```verilog
 wcount = 0;
 wr_en = 1;
 
 while (!full) begin
     wr_data = wcount[7:0];
     @(posedge wr_clk);
+    $display("[WR] t=%0t  WROTE %0d", $time, wr_data);
     wcount = wcount + 1;
 end
 
 wr_en = 0;
+```
 
-2.4 Illegal Write Test (Overflow Protection)
+---
 
-After FULL, TB attempts an extra write:
+## 2.4 Illegal Write Test (Overflow Prevention)
 
-wr_en   = 1;
+After FIFO becomes FULL:
+
+```verilog
+wr_en  = 1;
 wr_data = 8'hAA;
+```
 
+But because:
 
-But FIFO write port uses:
-
+```verilog
 if (wr_en && !full)
-    mem[waddr] <= wr_data;
+```
 
+Write is **ignored**.  
+Confirms correct overflow protection.
 
-Since full = 1, the write is ignored.
+---
 
-This verifies overflow protection.
+## 2.5 Reading Until EMPTY
 
-2.5 Reading Until EMPTY
+```verilog
 rd_en = 1;
-
-while (!empty)
-    @(posedge rd_clk);
-
+while (!empty) @(posedge rd_clk);
 rd_en = 0;
+```
 
+FIFO drains completely → EMPTY asserted correctly.
 
-FIFO drains correctly and asserts EMPTY.
+---
 
-📈 3. Output Waveforms (Post-Implementation)
+# 3. Output Waveforms (Post-Implementation)
 
-Waveforms included in:
+Stored in:
 
+```
 Outputwaveform/
+    Full_condition.png
+    Empty_condition.png
+```
+
+### Full_condition.png
+
+- Write pointer increments  
+- FIFO becomes FULL  
+- Extra write “AA” rejected  
+- FULL flag works correctly  
+
+### Empty_condition.png
+
+- Read pointer increments  
+- FIFO drains fully  
+- EMPTY flag asserts  
+- No underflow events  
+
+Validates correct pointer synchronization and flag logic.
+
+---
+
+# 4. Summary
+
+This project demonstrates a fully functional asynchronous FIFO featuring:
+
+- Gray-code pointers
+- Dual clock domains
+- Safe pointer synchronization
+- Correct FULL and EMPTY detection
+- Overflow & underflow protection
+
+Verification performed via:
+
+- Behavioral simulation  
+- Post-synthesis simulation  
+- Post-implementation timing simulation  
+
+This design represents the **canonical industry-standard FIFO architecture** for CDC applications.
+
