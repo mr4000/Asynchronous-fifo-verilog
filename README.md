@@ -242,8 +242,10 @@ Stored in:
 
 ```
 Outputwaveform/
-    Full_condition.png
-    Empty_condition.png
+    [Full_condition.png](Outputwaveform/Full_condition.png)
+
+   [Empty_condition.png](Outputwaveform/Empty_condition.png)
+
 ```
 
 ### Full_condition.png
