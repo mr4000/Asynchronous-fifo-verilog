@@ -13,11 +13,11 @@ An **asynchronous FIFO** transfers data between two unrelated clocks:
 
 It must safely manage:
 
-- Metastability
-- Pointer corruption
-- Safe multi-bit synchronization
-- Reliable FULL/EMPTY detection
-- Overflow/Underflow protection
+- Metastability  
+- Pointer corruption  
+- Safe multi-bit synchronization  
+- Reliable FULL/EMPTY detection  
+- Overflow/Underflow protection  
 
 This design uses the **standard industry architecture**.
 
@@ -179,7 +179,7 @@ This ensures the FIFO internal registers are not held by GSR.
 
 ## 2.2 Clock Generation
 
-- Write clock: `wr_clk = 100 MHz` (10 ns)
+- Write clock: `wr_clk = 100 MHz` (10 ns)  
 - Read clock: `rd_clk ≈ 71 MHz` (14 ns)
 
 These independent clocks cause *true asynchronous* operation.
@@ -219,8 +219,7 @@ But because:
 if (wr_en && !full)
 ```
 
-Write is **ignored**.  
-Confirms correct overflow protection.
+Write is **ignored** → confirms overflow protection.
 
 ---
 
@@ -238,31 +237,17 @@ FIFO drains completely → EMPTY asserted correctly.
 
 # 3. Output Waveforms (Post-Implementation)
 
-Stored in:
+Waveforms are stored in the **Outputwaveform** directory.
 
-```
-Outputwaveform/
-    [Full_condition.png](Outputwaveform/Full_condition.png)
+### 🔹 Full Condition  
+**Click to open:**  
+[Full_condition.png](Outputwaveform/Full_condition.png)
 
-   [Empty_condition.png](Outputwaveform/Empty_condition.png)
+### 🔹 Empty Condition  
+**Click to open:**  
+[Empty_condition.png](Outputwaveform/Empty_condition.png)
 
-```
-
-### Full_condition.png
-
-- Write pointer increments  
-- FIFO becomes FULL  
-- Extra write “AA” rejected  
-- FULL flag works correctly  
-
-### Empty_condition.png
-
-- Read pointer increments  
-- FIFO drains fully  
-- EMPTY flag asserts  
-- No underflow events  
-
-Validates correct pointer synchronization and flag logic.
+Both links work directly when viewed on GitHub.
 
 ---
 
@@ -270,11 +255,11 @@ Validates correct pointer synchronization and flag logic.
 
 This project demonstrates a fully functional asynchronous FIFO featuring:
 
-- Gray-code pointers
-- Dual clock domains
-- Safe pointer synchronization
-- Correct FULL and EMPTY detection
-- Overflow & underflow protection
+- Gray-code pointers  
+- Dual clock domains  
+- Safe pointer synchronization  
+- Correct FULL and EMPTY detection  
+- Overflow & underflow protection  
 
 Verification performed via:
 
