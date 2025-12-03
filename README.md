@@ -247,7 +247,6 @@ Waveforms are stored in the **Outputwaveform** directory.
 **Click to open:**  
 [Empty_condition.png](Outputwaveform/Empty_condition.png)
 
-Both links work directly when viewed on GitHub.
 
 ---
 
