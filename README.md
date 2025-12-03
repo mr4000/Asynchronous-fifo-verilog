@@ -42,7 +42,7 @@ If sampled mid-transition by another clock domain, this produces corrupted value
 This massively improves CDC safety.
   
 
-## 🔷 1.2 Pointer Width and Structure
+##  1.2 Pointer Width and Structure
 
 For a FIFO of depth `DEPTH = 2^ASIZE`:
 
@@ -75,8 +75,7 @@ Only the second stage (*_s2) is used.
 
 This removes metastability and produces stable timing.
 
-
-1.4 Next-Pointer Logic (STA-Friendly)
+## 1.4 Next-Pointer Logic (STA-Friendly)
 wbin_next = wr_bin + (wr_en & ~full);
 wgnext    = bin2gray(wbin_next);
 
@@ -86,7 +85,7 @@ rgnext    = bin2gray(rbin_next);
 
 Using next pointer values ensures FULL/EMPTY flags update in the same clock cycle as pointer increments.
 
-1.5  FULL Condition (Gray Logic)
+## 1.5  FULL Condition (Gray Logic)
 
 This is the industry-standard rule:
 
@@ -101,13 +100,13 @@ The Gray codes differ only in their MSBs,
 This condition detects true FIFO FULL without ambiguity.
 
 
-1.6 EMPTY Condition
+## 1.6 EMPTY Condition
 
 rempty_reg <= (rgnext == rwptr_sync);
 
 This checks whether the next read pointer equals the synchronized write pointer.
 
-1.7 Memory Behavior
+## 1.7 Memory Behavior
 
 Write (write-clock domain):
 
@@ -120,17 +119,17 @@ rd_data <= mem[raddr];
 
 The last read value is held stable when empty=1.
 
-1.8 Why FIFO Depth Must Be a Power-of-2
+## 1.8 Why FIFO Depth Must Be a Power-of-2
 
 Gray code wraps cleanly only for 2^N sizes.
 
 Non-power-of-2 FIFOs break the one-bit-change rule and produce invalid transitions.
 
-2. Testbench Description
+## 2. Testbench Description
 
 The testbench performs a complete verification of the FIFO:
 
-2.1 Reset Handling (includes Vivado GSR)
+## 2.1 Reset Handling (includes Vivado GSR)
 
 Vivado post-implementation simulation includes a Global Set/Reset (GSR) active for ~100 ns.
 
@@ -142,14 +141,14 @@ rd_rst_n = 1;
 
 This ensures FIFO registers are not held in reset by GSR
 
-2.2 Clock Generation
+## 2.2 Clock Generation
 
 wr_clk = 100 MHz (10 ns)
 rd_clk ≈ 71 MHz (14 ns)
 
 Two independent clocks → fully asynchronous behavior.
 
-2.3 Writing Until FULL
+## 2.3 Writing Until FULL
 
 
 The TB writes incrementing values until the FIFO asserts full:
@@ -164,7 +163,7 @@ while (!full) begin
 end
 wr_en = 0;
 
-2.4 Illegal write test 
+## 2.4 Illegal write test 
 
 After FULL, TB drives:
 
@@ -187,7 +186,7 @@ rd_en = 0;
 
 The FIFO drains completely and asserts empty
 
-3.Output Waveforms (Post-Implementation)
+## 3.Output Waveforms (Post-Implementation)
 
 Waveforms are included in:
 
@@ -219,7 +218,7 @@ no underflow events
 
 These waveforms confirm correct pointer synchronization and status flag logic after implementation.
 
-4. Summary
+## 4. Summary
 
 This project demonstrates a fully functional asynchronous FIFO using:
 
