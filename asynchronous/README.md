@@ -73,6 +73,7 @@ Only the second stage (*_s2) is used.
 
 This removes metastability and produces stable timing.
 
+---
 ## 1.4 Next-Pointer Logic (STA-Friendly)
 
 ```verilog
