@@ -3,10 +3,7 @@ This directory contains the RTL design of a Synchronous FIFO along with a comple
 All core FIFO behaviors—pointer movement, occupancy, full/empty logic, and data integrity—are formally proven.
 
 📄 For full detailed explanations, refer to the report:
-➡️ FIFO_Formal_Verification_Report_Manish_Ranjan.pdf
-
-**[`FIFO_Formal_Verification_Report_Manish_Ranjan.pdf`](fifo-verilog/synchronous
-/FIFO_Formal_Verification_Report_Manish_Ranjan.pdf)**
+**[`FIFO_Formal_Verification_Report_Manish_Ranjan.pdf`](fifo-verilog/synchronous/FIFO_Formal_Verification_Report_Manish_Ranjan.pdf)**
 
 🔧 Tools Used
 
@@ -42,7 +39,7 @@ SBY ... DONE (PASS, rc=0)
 
 📊 Verification Results
 
-📂 synchronous/Results/
+**(fifo-verilog/synchronous/Results/)**
 
 These show:
 
