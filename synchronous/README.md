@@ -1,45 +1,57 @@
 # Synchronous FIFO – RTL + Formal Verification
-This directory contains the RTL implementation of a Synchronous FIFO and a complete formal verification environment built using SymbiYosys (SBY).The verification proves correctness of pointers, flags, occupancy, and data ordering.For a full explanation of the proofs, refer to the included PDF report.
+This directory contains the RTL design of a Synchronous FIFO along with a complete formal verification environment built using Yosys + SymbiYosys (SBY).
+All core FIFO behaviors—pointer movement, occupancy, full/empty logic, and data integrity—are formally proven.
 
+📄 For full detailed explanations, refer to the report:
+➡️ FIFO_Formal_Verification_Report_Manish_Ranjan.pdf
 
-# Tools Used
+🔧 Tools Used
 
-Yosys – HDL synthesis & formal elaboration
+Yosys – Verilog synthesis & formal elaboration
 
-SymbiYosys (SBY) – formal verification flow
+SymbiYosys (SBY) – formal job orchestration
 
 Boolector – SMT solver
 
-GTKWave – waveform viewing for counterexample traces
+GTKWave – waveform viewer
 
-Works with:
-OSS CAD Suite (recommended)
+OSS CAD Suite – Bundled toolchain (recommended)
 
 # How to Run the Formal Verification
 Inside synchronous/ run:
+
 sby -f fifo_sync.sby
 
 After running:
 
-Proof results appear under: synchronous/fifo_sync/
+| Output Type                                      | Location                                     |
+| ------------------------------------------------ | -------------------------------------------- |
+| Formal job directory                             | `synchronous/fifo_sync/`                     |
+| Logs                                             | `synchronous/fifo_sync/model/` + `engine_0/` |
+| Counterexample waveform (only if failure occurs) | `engine_0/trace.vcd`                         |
+| Solver result                                    | printed to terminal                          |
 
-Waveforms (only if a failure occurs) in: engine_0/trace.vcd
 
-Logs stored in: model/ and engine_0/
-
-A successful run prints:
+A successful proof ends with:
 
 SBY ... DONE (PASS, rc=0)
 
-Verification Results (Screenshots)
 
-synchronous/Results/
-    Pasted image.png
-    Pasted image (2).png
+📊 Verification Results
 
-    synchronous/Results/
-    Pasted image.png
-    Pasted image (2).png
+📂 synchronous/Results/
+
+These show:
+
+SymbiYosys running all property checks
+
+Boolector solving each step successfully
+
+Final PASS status
+
+No counterexamples generated
+
+
 
 
 
