@@ -39,7 +39,7 @@ SBY ... DONE (PASS, rc=0)
 
 📊 Verification Results
 
-**(fifo-verilog/synchronous/Results/)**
+**(/synchronous/Results/)**
 
 These show:
 
