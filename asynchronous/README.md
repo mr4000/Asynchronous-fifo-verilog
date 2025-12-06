@@ -42,7 +42,7 @@ If sampled mid-transition by another clock domain, this produces corrupted value
 This massively improves CDC safety.
   
 
-## 🔷 1.2 Pointer Width and Structure
+## 1.2 Pointer Width and Structure
 
 For a FIFO of depth `DEPTH = 2^ASIZE`:
 
@@ -75,8 +75,7 @@ Only the second stage (*_s2) is used.
 
 This removes metastability and produces stable timing.
 
-
-1.4 Next-Pointer Logic (STA-Friendly)
+## 1.4 Next-Pointer Logic (STA-Friendly)
 wbin_next = wr_bin + (wr_en & ~full);
 wgnext    = bin2gray(wbin_next);
 
