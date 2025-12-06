@@ -1,0 +1,16 @@
+[options]
+mode bmc
+depth 60               
+
+[files]
+fifo_sync.sv
+fifo_harness.sv
+
+[engines]
+smtbmc boolector
+
+[script]
+read -sv fifo_harness.sv
+read -sv  fifo_sync.sv
+prep -top fifo_harness
+
