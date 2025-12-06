@@ -5,6 +5,9 @@ All core FIFO behaviors—pointer movement, occupancy, full/empty logic, and dat
 📄 For full detailed explanations, refer to the report:
 ➡️ FIFO_Formal_Verification_Report_Manish_Ranjan.pdf
 
+**[`FIFO_Formal_Verification_Report_Manish_Ranjan.pdf`](fifo-verilog/synchronous
+/FIFO_Formal_Verification_Report_Manish_Ranjan.pdf)**
+
 🔧 Tools Used
 
 Yosys – Verilog synthesis & formal elaboration
