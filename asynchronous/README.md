@@ -68,7 +68,7 @@ wrptr_s2 <= wrptr_s1;
 // Write pointer into read clock domain
 rwptr_s1 <= wr_gray;
 rwptr_s2 <= rwptr_s1;
-
+```
 Only the second stage (*_s2) is used.
 
 This removes metastability and produces stable timing.
